@@ -3,10 +3,16 @@ import java.util.ArrayList;
 public class SolveBoard
 {
     char[][] board;
+    
+    //The states to be evaluated
     ArrayList<State> frontierStates = new ArrayList<State>();
+    
+    //The first state is the current state being evaluated
     ArrayList<State> evalStates = new ArrayList<State>();
-    int currentState = 0;
+    
+    int currentState = -1;
     int newState = 1;
+    long startTime, endTime;
     
     //Each index contains a int array that contains {headRow, headCol, tailRow, tailCol}
     ArrayList<int[]> wormPositions = new ArrayList<int[]>();
@@ -16,9 +22,10 @@ public class SolveBoard
       board = gameBoard;
       
       //Setup inital state
-      State initialState = new State(currentState, board, currentState, 0, 0, 0, 0);
+      State initialState = new State(0, board, currentState, 0, 0, 0, 0);
       frontierStates.add(initialState);
       
+      //Finds the head and tail of the 0 worm;
       getWormPosistions(frontierStates.get(0).board);
     
       BFTS();
@@ -26,10 +33,13 @@ public class SolveBoard
 	
     
     //Breadth First Tree Search 
-    //I add the heads states to the queue first, starting with the state above the head
-    //and then moving clockwise.  I then do the same for the tail.
+    //I add the heads states to the Frontier queue first, starting with the state above the head
+    //and then moving clockwise.  I then do the same for the tail.  States are popped off of the 
+    //frontier queue onto the evalQueue which in turn adds new states to the frontier.  This conitnues
+    //until the state on the eval queue is the goal state.
     public void BFTS()
     {
+    	startTime = System.nanoTime();
     	char[][] tempBoard = new char[board.length][board[0].length];
     	Boolean goalFound = false;
 		State tempState;
@@ -40,6 +50,7 @@ public class SolveBoard
 			
         	//pop frontier for eval
         	evalStates.add(0, frontierStates.remove(0));
+        	//Get worm position in the new state
 			getWormPosistions(evalStates.get(0).board);
         	
         	
@@ -121,12 +132,53 @@ public class SolveBoard
         	
         	//check eval for GS ///%@#%@*&#^$%#$ ONLY WORKS for one worm right now
         	if(evalStates.get(0).board[board.length - 1][board[0].length - 1] == '0' || evalStates.get(0).board[board.length - 1][board[0].length - 1] == 'U' || evalStates.get(0).board[board.length - 1][board[0].length - 1] == 'L')
+        	{
         		goalFound = true;
+        		endTime = System.nanoTime();
+        	}
     	} 	
     	
-    	System.out.println("GOAL FOUND");
+    	boolean foundInitial = false;
+    	int nextID;
+    	ArrayList<State> printList = new ArrayList<State>();
+    	printList.add(0, evalStates.get(0));
+    	nextID = evalStates.get(0).parentID;
+    	
+    	//This loop traverses the printList by finding each steps parent state
+    	while(foundInitial == false)
+    	{
+    		for(int i = 0; i < evalStates.size(); i++)
+    		{
+    			if(evalStates.get(i).id == nextID)
+    			{
+    				nextID = evalStates.get(i).parentID;
+    				printList.add(0, evalStates.get(i));
+    			}		
+    		}
+    		if(nextID == -1)
+    			foundInitial = true;
+    	}
+    	
+
+    	//Print the steps in the solution
+    	for(int i = 0; i < printList.size(); i++)
+    	{
+    		System.out.print(printList.get(i).solutionStep[0]);
+    		System.out.print(printList.get(i).solutionStep[1]);
+    		System.out.print(printList.get(i).solutionStep[2]);
+    		System.out.print(printList.get(i).solutionStep[3]); 
+    		System.out.println();
+    	}
+    	
+    	//Print final board state
     	board = evalStates.get(0).board;
     	printBoard();
+    	
+    	//Time in milliseconds
+    	System.out.println((endTime - startTime) / 1000000);
+    	
+    	//NUmber of steps in solution
+    	System.out.println(printList.size());
     }
  
  
@@ -137,12 +189,15 @@ public class SolveBoard
     	char[][] tempBoard = new char[board.length][board[0].length];
     	boolean moveMade = false;
     	
+    	//Copy current board
     	for(int i = 0; i < board.length; i++)
         {
              for(int j = 0; j < board[0].length; j++)
             	 tempBoard[i][j] = evalStates.get(0).board[i][j];
         }
     	 
+    	
+    	//Makes the changes at the tail then uses the follow to head methods to make the changes there 
     	if(head == 0)
     	{
     		for(int i = 0; i < board.length; i++)
@@ -192,7 +247,7 @@ public class SolveBoard
     				if(tempBoard[i][j] == (char) (wormNumber + 48) && moveMade == false)
     				{
     					tempBoard[i][j] = 'e';
-    					tempBoard = findAndMoveTail(i, j, tempBoard, wormNumber, direction);
+    					tempBoard = findAndMoveHead(i, j, tempBoard, wormNumber, direction);
     					moveMade = true;
     				}
     			}
@@ -203,14 +258,14 @@ public class SolveBoard
     
     
     //This function is called when the move originates in the head and handles the shifting of the worm,
-    //by following the arrows from the head of the worm that is currently moving.
-    public char[][] findAndMoveTail(int col, int row, char[][] tempBoard, int wormNumber, char direction)
+    //by following the arrows from the tail of the worm that is currently moving.
+    public char[][] findAndMoveHead(int col, int row, char[][] tempBoard, int wormNumber, char direction)
     {
 		Boolean firstLink = true, finished = false;
     	
     	while(finished == false)
     	{
-    		//Follows the arrows to the tail and moves it
+    		//Follows the arrows to the tail and moves it, stops when is finds a letter indicating a tail
     		if(col > 0 && tempBoard[col - 1][row] == 'v')
     		{		
     			col--;
@@ -273,6 +328,7 @@ public class SolveBoard
     		}
     	}
     	
+    	//Makes the final change at the tail
     	if(direction == 'D')
     		tempBoard[col + 1][row] = 'U';
     	else if(direction == 'U')
@@ -288,7 +344,7 @@ public class SolveBoard
     
     
     //This function is called when the move originates from the tail of the worm it performs the
-    //changes to move the tail forward. The tail is found using the passed in head coordinates.
+    //changes to move the tail forward. The head is found using the passed in tail coordinates.
     public char[][] followBodyToTail(int col, int row, char[][] tempBoard)
     {
     	//If capitol E is ever inserted then ERROR
