@@ -11,7 +11,8 @@ public class SolveBoard
     {
       board = gameBoard;
       
-      BFTS bfts = new BFTS(board);
+      //BFTS bfts = new BFTS(board);
+      IDDFTS iddfts = new IDDFTS(board, numWorms);
     }
     
 	public void printBoard() 

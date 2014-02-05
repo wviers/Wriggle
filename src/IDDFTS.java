@@ -2,13 +2,13 @@ import java.util.ArrayList;
 
 
 
-//Breadth First Tree Search 
+//Iterative Deepening Depth First Tree Search
 //I add the heads states to the Frontier queue first, starting with the state above the head
 //and then moving clockwise.  I then do the same for the tail.  States are popped off of the 
-//frontier queue onto the evalQueue which in turn adds new states to the frontier.  This conitnues
-//until the state on the eval queue is the goal state.
-public class BFTS
-{	
+//frontier queue onto the evalQueue which in turn adds new states to the frontier.  This continues
+//until the state on the evalqueue is the goal state.
+public class IDDFTS
+{
     char[][] board;
     
     //The states to be evaluated
@@ -19,22 +19,23 @@ public class BFTS
     
     int currentState = -1;
     int newState = 1;
+    int numWorms;
     long startTime, endTime;
     
     //Each index contains a int array that contains {headRow, headCol, tailRow, tailCol}
     ArrayList<int[]> wormPositions = new ArrayList<int[]>();
     
 
-	public BFTS(char[][] passedBoard)
+	public IDDFTS(char[][] passedBoard, int worms)
 	{
 		board = passedBoard;
-		
+		numWorms = worms;
 	      
 	    //Setup inital state
-	    State initialState = new State(0, board, currentState, 0, 0, 0, 0);
+	    State initialState = new State(0, board, currentState, 0, 0, 0, 0, 0);
 	    frontierStates.add(initialState);
 	      
-	    //Finds the head and tail of the 0 worm;
+	    //Finds the head and tail coordinates of all of the worms
 	    getWormPosistions(frontierStates.get(0).board);
 		
 		
@@ -157,7 +158,7 @@ public class BFTS
     		if(nextID == -1)
     			foundInitial = true;
     	}
-    	
+    
     	
     	//Initial state is not a move
     	printList.remove(0);
@@ -410,28 +411,75 @@ public class BFTS
     public void getWormPosistions(char[][] currentBoard)
     {
         int[] tempWorm = new int[4];
+        int[] coords = new int[2];
         
         wormPositions.clear();
         
-        //Find the head and tail of the worm %%%%%%%@%@%@%@%@//Doesn't scale for mult worms yet
-        for(int i = 0; i < currentBoard.length; i++)
+        for(int h = 0; h < numWorms; h++)
         {
-            for(int j = 0; j < currentBoard.length; j++)
-            {
-      	      if(currentBoard[i][j] == '0')
-      	      {
-      		      tempWorm[2] = i;
-      		      tempWorm[3] = j;
-      	      }
-      	      else if(currentBoard[i][j] == 'U' || currentBoard[i][j] == 'D' || currentBoard[i][j] == 'L' || currentBoard[i][j] == 'R')
-      	      {
-      	    	  tempWorm[0] = i;
-      	    	  tempWorm[1] = j;
-      	      }
-            }
+        	for(int i = 0; i < currentBoard.length; i++)
+        	{
+            	for(int j = 0; j < currentBoard.length; j++)
+            	{	
+      	      		if(currentBoard[i][j] == (char) (h + 48))
+      	      		{
+      	                tempWorm = new int[4];
+      	      			tempWorm[2] = i;
+      	      			tempWorm[3] = j;
+      	      			coords = getHeadCoords(i, j, currentBoard);
+      	      			tempWorm[0] = coords[0];
+      	      			tempWorm[1] = coords[1];
+      	                wormPositions.add(tempWorm);
+      	      		}
+            	}
+        	}
         }
-        
-        wormPositions.add(tempWorm);
+    }
+    
+    
+    public int[] getHeadCoords(int row, int col, char[][] tempBoard)
+    {
+    	int[] coords = new int[2];
+    	
+		Boolean finished = false;
+    	
+    	while(finished == false)
+    	{
+    		//Follows the arrows to the head, stops when is finds a letter indicating a tail
+    		if(row > 0 && tempBoard[row - 1][col] == 'v')	
+    			row--;
+    		else if(col < tempBoard.length - 1 && tempBoard[row][col + 1] == '<')
+    			col++;
+    		else if(row < tempBoard[0].length - 1 && tempBoard[row + 1][col] == '^')
+    			row++;
+    		else if(col > 0 && tempBoard[row][col - 1] == '>')
+    			col--;
+    		else if(row > 0 && tempBoard[row - 1][col] == 'D')
+    		{
+    			row--;
+    			finished = true;
+    		}
+    		else if(col < tempBoard.length - 1 && tempBoard[row][col + 1] == 'L')
+    		{
+    			col++;
+    			finished = true;
+    		}
+    		else if(row < tempBoard[0].length - 1 && tempBoard[row + 1][col] == 'U')
+    		{
+    			row++;
+    			finished = true;
+    		}
+    		else if(col > 0 && tempBoard[row][col - 1] == 'R')
+    		{
+    			col--;
+    			finished = true;
+    		}
+    	}	
+    	
+    	coords[0] = row;
+    	coords[1] = col;
+    	
+    	return coords;
     }
 
     

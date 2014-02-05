@@ -4,6 +4,7 @@ public class State
 	char[][] board;
 	int parentID;
 	int[] solutionStep = new int[4];
+	int depth;
 	
 	
 	public State(int theID, char[][] gameBoard, int passedID, int wriggler, int tail, int col, int row)
@@ -15,5 +16,17 @@ public class State
 		solutionStep[1] = tail;
 		solutionStep[2] = col;
 		solutionStep[3] = row;
+	}	
+	
+	public State(int theID, char[][] gameBoard, int passedID, int wriggler, int tail, int col, int row, int passDepth)
+	{
+		id = theID;
+		board = gameBoard;
+		parentID = passedID;
+		solutionStep[0] = wriggler;
+		solutionStep[1] = tail;
+		solutionStep[2] = col;
+		solutionStep[3] = row;
+		depth = passDepth;
 	}	
 }
