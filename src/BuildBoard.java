@@ -44,6 +44,6 @@ public class BuildBoard
 		}
     
     
-        SolveBoard BFST = new SolveBoard(board, numWorms);
+        SolveBoard solve = new SolveBoard(board, numWorms);
     }
 }

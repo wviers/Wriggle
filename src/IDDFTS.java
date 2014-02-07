@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 
 
@@ -26,116 +27,140 @@ public class IDDFTS
     ArrayList<int[]> wormPositions = new ArrayList<int[]>();
     
 
+    //Iterative-Deepening Depth First Tree Search 
+    //I add the heads states to the Frontier queue first, starting with the state above the head
+    //and then moving clockwise.  I then do the same for the tail, these moves are done randomly on one.  
+    //of the worms.  States are popped off of the frontier queue onto the evalQueue which in turn adds 
+    //new states to the frontier.  This continues until the state on the eval queue is the goal state.
+    //The depth starts at 0 and increases by by 1 each time the goal state is not found and the depth 
+    //state is reached.
 	public IDDFTS(char[][] passedBoard, int worms)
 	{
 		board = passedBoard;
 		numWorms = worms;
+		Random gen = new Random();
+		
+		//Number of states from the initial state the algorithm will evaluate
+		int depth = -1, randWorm;
 	      
 	    //Setup inital state
-	    State initialState = new State(0, board, currentState, 0, 0, 0, 0, 0);
+	    State initialState = new State(0, board, currentState, 0, 0, 0, 0);
 	    frontierStates.add(initialState);
 	      
 	    //Finds the head and tail coordinates of all of the worms
 	    getWormPosistions(frontierStates.get(0).board);
 		
 		
-    	startTime = System.nanoTime();
     	char[][] tempBoard = new char[board.length][board[0].length];
-    	Boolean goalFound = false;
+    	Boolean goalFound = false, stateChanged = false;
 		State tempState;
     	
     	while(goalFound == false)
     	{
-			currentState++;
-			
-        	//pop frontier for eval
-        	evalStates.add(0, frontierStates.remove(0));
-        	//Get worm position in the new state
-			getWormPosistions(evalStates.get(0).board);
+        	startTime = System.nanoTime();
+    		evalStates.clear();
+    		frontierStates.clear();
+    		currentState = 0;
+    		newState = 1;
+    		stateChanged = false;
+    		depth++;
+    	    frontierStates.add(initialState);
         	
         	
-    		for(int i = 0; i < wormPositions.size(); i++)
+    		for(int i = 0; i < depth && goalFound == false; i++)
     		{
+    			if(stateChanged == true)
+    				currentState++;
+      			stateChanged = false;
+    			randWorm = gen.nextInt(numWorms);
+    			
+            	//pop frontier for eval
+    			if(!frontierStates.isEmpty())
+    				evalStates.add(0, frontierStates.remove(0));
+            	//Get worm position in the new state
+    			getWormPosistions(evalStates.get(0).board);
+    
     			//above head is empty
-    			if(wormPositions.get(i)[0] > 0 && evalStates.get(0).board[wormPositions.get(i)[0] - 1][wormPositions.get(i)[1]] == 'e')
+    			if(wormPositions.get(randWorm)[0] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[0] - 1][wormPositions.get(randWorm)[1]] == 'e')
     			{
-    				tempBoard = moveWorm(i, 1, 'U');
-    				tempState = new State(newState, tempBoard, currentState, i, 0, wormPositions.get(i)[1], wormPositions.get(i)[0] - 1);
+    				tempBoard = moveWorm(randWorm, 1, 'U');
+    				tempState = new State(newState, tempBoard, currentState, randWorm, 0, wormPositions.get(randWorm)[1], wormPositions.get(randWorm)[0] - 1);
     				newState++;
+    				stateChanged = true;
     				frontierStates.add(tempState);
     			}
     			//below head is empty
-    			if(wormPositions.get(i)[0] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(i)[0] + 1][wormPositions.get(i)[1]] == 'e')
+    			if(wormPositions.get(randWorm)[0] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[0] + 1][wormPositions.get(randWorm)[1]] == 'e')
     			{
-    				tempBoard = moveWorm(i, 1, 'D');
-    				tempState = new State(newState, tempBoard, currentState, i, 0, wormPositions.get(i)[1], wormPositions.get(i)[0] + 1);
+    				tempBoard = moveWorm(randWorm, 1, 'D');
+    				tempState = new State(newState, tempBoard, currentState, randWorm, 0, wormPositions.get(randWorm)[1], wormPositions.get(randWorm)[0] + 1);
     				newState++;
     				frontierStates.add(tempState);
     			}
     			//left of head is empty
-    			if(wormPositions.get(i)[1] > 0 && evalStates.get(0).board[wormPositions.get(i)[0]][wormPositions.get(i)[1] - 1] == 'e')
+    			if(wormPositions.get(randWorm)[1] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[0]][wormPositions.get(randWorm)[1] - 1] == 'e')
     			{
-    				tempBoard = moveWorm(i, 1, 'L');
-    				tempState = new State(newState, tempBoard, currentState, i, 0, wormPositions.get(i)[1] - 1, wormPositions.get(i)[0]);
+    				tempBoard = moveWorm(randWorm, 1, 'L');
+    				tempState = new State(newState, tempBoard, currentState, randWorm, 0, wormPositions.get(randWorm)[1] - 1, wormPositions.get(randWorm)[0]);
     				newState++;
+    				stateChanged = true;
     				frontierStates.add(tempState);
     			}
     			//right of head is empty
-    			if(wormPositions.get(i)[1] < board.length - 1 && evalStates.get(0).board[wormPositions.get(i)[0]][wormPositions.get(i)[1] + 1] == 'e')
+    			if(wormPositions.get(randWorm)[1] < board.length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[0]][wormPositions.get(randWorm)[1] + 1] == 'e')
     			{
-    				tempBoard = moveWorm(i, 1, 'R');
-    				tempState = new State(newState, tempBoard, currentState, i, 0, wormPositions.get(i)[1] + 1, wormPositions.get(i)[0]);
+    				tempBoard = moveWorm(randWorm, 1, 'R');
+    				tempState = new State(newState, tempBoard, currentState, randWorm, 0, wormPositions.get(randWorm)[1] + 1, wormPositions.get(randWorm)[0]);
     				newState++;
+    				stateChanged = true;
     				frontierStates.add(tempState);
     			}
     			//above tail is empty
-    			if(wormPositions.get(i)[2] > 0 && evalStates.get(0).board[wormPositions.get(i)[2] - 1][wormPositions.get(i)[3]] == 'e')
+    			if(wormPositions.get(randWorm)[2] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[2] - 1][wormPositions.get(randWorm)[3]] == 'e')
     			{
-    				tempBoard = moveWorm(i, 0, 'U');
-    				tempState = new State(newState, tempBoard, currentState, i, 1, wormPositions.get(i)[3], wormPositions.get(i)[2] - 1);
+    				tempBoard = moveWorm(randWorm, 0, 'U');
+    				tempState = new State(newState, tempBoard, currentState, randWorm, 1, wormPositions.get(randWorm)[3], wormPositions.get(randWorm)[2] - 1);
     				newState++;
+    				stateChanged = true;
     				frontierStates.add(tempState);
     			}
     			//below tail is empty
-    			if(wormPositions.get(i)[2] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(i)[2] + 1][wormPositions.get(i)[3]] == 'e')
+    			if(wormPositions.get(randWorm)[2] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[2] + 1][wormPositions.get(randWorm)[3]] == 'e')
     			{
-    				tempBoard = moveWorm(i, 0, 'D');
-    				tempState = new State(newState, tempBoard, currentState, i, 1, wormPositions.get(i)[3], wormPositions.get(i)[2] + 1);
+    				tempBoard = moveWorm(randWorm, 0, 'D');
+    				tempState = new State(newState, tempBoard, currentState, randWorm, 1, wormPositions.get(randWorm)[3], wormPositions.get(randWorm)[2] + 1);
     				newState++;
+    				stateChanged = true;
     				frontierStates.add(tempState);
     			}
     			//left of tail is empty
-    			if(wormPositions.get(i)[3] > 0 && evalStates.get(0).board[wormPositions.get(i)[2]][wormPositions.get(i)[3] - 1] == 'e')
+    			if(wormPositions.get(randWorm)[3] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[2]][wormPositions.get(randWorm)[3] - 1] == 'e')
     			{
-    				tempBoard = moveWorm(i, 0, 'L');
-    				tempState = new State(newState, tempBoard, currentState, i, 1, wormPositions.get(i)[3] - 1, wormPositions.get(i)[2]);
+    				tempBoard = moveWorm(randWorm, 0, 'L');
+    				tempState = new State(newState, tempBoard, currentState, randWorm, 1, wormPositions.get(randWorm)[3] - 1, wormPositions.get(randWorm)[2]);
     				newState++;
+    				stateChanged = true;
     				frontierStates.add(tempState);
     			}
     			//right of tail is empty
-    			if(wormPositions.get(i)[3] < board.length - 1 && evalStates.get(0).board[wormPositions.get(i)[2]][wormPositions.get(i)[3] + 1] == 'e')
+    			if(wormPositions.get(randWorm)[3] < board.length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[2]][wormPositions.get(randWorm)[3] + 1] == 'e')
     			{
-    				tempBoard = moveWorm(i, 0, 'R');
-    				tempState = new State(newState, tempBoard, currentState, i, 1, wormPositions.get(i)[3] + 1, wormPositions.get(i)[2]);
+    				tempBoard = moveWorm(randWorm, 0, 'R');
+    				tempState = new State(newState, tempBoard, currentState, randWorm, 1, wormPositions.get(randWorm)[3] + 1, wormPositions.get(randWorm)[2]);
     				newState++;
+    				stateChanged = true;
     				frontierStates.add(tempState);
     			}
+    		
+        		getWormPosistions(evalStates.get(0).board);
+        		
+            	//check eval for GS 
+            	if((wormPositions.get(0)[0] == board.length - 1 && wormPositions.get(0)[1] == board.length - 1) || (wormPositions.get(0)[2] == board.length - 1 && wormPositions.get(0)[3] == board.length - 1))
+            	{
+            		goalFound = true;
+            		endTime = System.nanoTime();
+            	}  		
     		}
-        	
-    		//Prints each board state
-    		/*
-        	System.out.println();
-        	board = evalStates.get(0).board;
-        	printBoard();
-        	System.out.println();
-        	*/
-        	
-        	//check eval for GS ///%@#%@*&#^$%#$ ONLY WORKS for one worm right now
-        	if(evalStates.get(0).board[board.length - 1][board[0].length - 1] == '0' || evalStates.get(0).board[board.length - 1][board[0].length - 1] == 'U' || evalStates.get(0).board[board.length - 1][board[0].length - 1] == 'L')
-        	{
-        		goalFound = true;
-        		endTime = System.nanoTime();
-        	}
     	} 	
     	
     	boolean foundInitial = false;
