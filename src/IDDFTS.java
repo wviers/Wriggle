@@ -1,3 +1,7 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -34,7 +38,7 @@ public class IDDFTS
     //new states to the frontier.  This continues until the state on the eval queue is the goal state.
     //The depth starts at 0 and increases by by 1 each time the goal state is not found and the depth 
     //state is reached.
-	public IDDFTS(char[][] passedBoard, int worms)
+	public IDDFTS(char[][] passedBoard, int worms) throws IOException
 	{
 		board = passedBoard;
 		numWorms = worms;
@@ -84,7 +88,7 @@ public class IDDFTS
     			if(wormPositions.get(randWorm)[0] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[0] - 1][wormPositions.get(randWorm)[1]] == 'e')
     			{
     				tempBoard = moveWorm(randWorm, 1, 'U');
-    				tempState = new State(newState, tempBoard, currentState, randWorm, 0, wormPositions.get(randWorm)[1], wormPositions.get(randWorm)[0] - 1);
+    				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 0, wormPositions.get(randWorm)[1], wormPositions.get(randWorm)[0] - 1);
     				newState++;
     				stateChanged = true;
     				frontierStates.add(tempState);
@@ -93,15 +97,16 @@ public class IDDFTS
     			if(wormPositions.get(randWorm)[0] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[0] + 1][wormPositions.get(randWorm)[1]] == 'e')
     			{
     				tempBoard = moveWorm(randWorm, 1, 'D');
-    				tempState = new State(newState, tempBoard, currentState, randWorm, 0, wormPositions.get(randWorm)[1], wormPositions.get(randWorm)[0] + 1);
+    				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 0, wormPositions.get(randWorm)[1], wormPositions.get(randWorm)[0] + 1);
     				newState++;
+    				stateChanged = true;
     				frontierStates.add(tempState);
     			}
     			//left of head is empty
     			if(wormPositions.get(randWorm)[1] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[0]][wormPositions.get(randWorm)[1] - 1] == 'e')
     			{
     				tempBoard = moveWorm(randWorm, 1, 'L');
-    				tempState = new State(newState, tempBoard, currentState, randWorm, 0, wormPositions.get(randWorm)[1] - 1, wormPositions.get(randWorm)[0]);
+    				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 0, wormPositions.get(randWorm)[1] - 1, wormPositions.get(randWorm)[0]);
     				newState++;
     				stateChanged = true;
     				frontierStates.add(tempState);
@@ -110,7 +115,7 @@ public class IDDFTS
     			if(wormPositions.get(randWorm)[1] < board.length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[0]][wormPositions.get(randWorm)[1] + 1] == 'e')
     			{
     				tempBoard = moveWorm(randWorm, 1, 'R');
-    				tempState = new State(newState, tempBoard, currentState, randWorm, 0, wormPositions.get(randWorm)[1] + 1, wormPositions.get(randWorm)[0]);
+    				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 0, wormPositions.get(randWorm)[1] + 1, wormPositions.get(randWorm)[0]);
     				newState++;
     				stateChanged = true;
     				frontierStates.add(tempState);
@@ -119,7 +124,7 @@ public class IDDFTS
     			if(wormPositions.get(randWorm)[2] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[2] - 1][wormPositions.get(randWorm)[3]] == 'e')
     			{
     				tempBoard = moveWorm(randWorm, 0, 'U');
-    				tempState = new State(newState, tempBoard, currentState, randWorm, 1, wormPositions.get(randWorm)[3], wormPositions.get(randWorm)[2] - 1);
+    				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 1, wormPositions.get(randWorm)[3], wormPositions.get(randWorm)[2] - 1);
     				newState++;
     				stateChanged = true;
     				frontierStates.add(tempState);
@@ -128,7 +133,7 @@ public class IDDFTS
     			if(wormPositions.get(randWorm)[2] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[2] + 1][wormPositions.get(randWorm)[3]] == 'e')
     			{
     				tempBoard = moveWorm(randWorm, 0, 'D');
-    				tempState = new State(newState, tempBoard, currentState, randWorm, 1, wormPositions.get(randWorm)[3], wormPositions.get(randWorm)[2] + 1);
+    				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 1, wormPositions.get(randWorm)[3], wormPositions.get(randWorm)[2] + 1);
     				newState++;
     				stateChanged = true;
     				frontierStates.add(tempState);
@@ -137,7 +142,7 @@ public class IDDFTS
     			if(wormPositions.get(randWorm)[3] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[2]][wormPositions.get(randWorm)[3] - 1] == 'e')
     			{
     				tempBoard = moveWorm(randWorm, 0, 'L');
-    				tempState = new State(newState, tempBoard, currentState, randWorm, 1, wormPositions.get(randWorm)[3] - 1, wormPositions.get(randWorm)[2]);
+    				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 1, wormPositions.get(randWorm)[3] - 1, wormPositions.get(randWorm)[2]);
     				newState++;
     				stateChanged = true;
     				frontierStates.add(tempState);
@@ -146,7 +151,7 @@ public class IDDFTS
     			if(wormPositions.get(randWorm)[3] < board.length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[2]][wormPositions.get(randWorm)[3] + 1] == 'e')
     			{
     				tempBoard = moveWorm(randWorm, 0, 'R');
-    				tempState = new State(newState, tempBoard, currentState, randWorm, 1, wormPositions.get(randWorm)[3] + 1, wormPositions.get(randWorm)[2]);
+    				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 1, wormPositions.get(randWorm)[3] + 1, wormPositions.get(randWorm)[2]);
     				newState++;
     				stateChanged = true;
     				frontierStates.add(tempState);
@@ -163,49 +168,60 @@ public class IDDFTS
     		}
     	} 	
     	
-    	boolean foundInitial = false;
-    	int nextID;
-    	ArrayList<State> printList = new ArrayList<State>();
-    	printList.add(0, evalStates.get(0));
-    	nextID = evalStates.get(0).parentID;
     	
-    	//This loop traverses the printList by finding each steps parent state
-    	while(foundInitial == false)
-    	{
-    		for(int i = 0; i < evalStates.size(); i++)
-    		{
-    			if(evalStates.get(i).id == nextID)
-    			{
-    				nextID = evalStates.get(i).parentID;
-    				printList.add(0, evalStates.get(i));
-    			}		
-    		}
-    		if(nextID == -1)
-    			foundInitial = true;
-    	}
-    
+		File output = new File("./output.txt");
+    	BufferedWriter out = new BufferedWriter(new FileWriter(output));
     	
-    	//Initial state is not a move
-    	printList.remove(0);
-    	//Print the steps in the solution
-    	for(int i = 0; i < printList.size(); i++)
+    	State currentState = new State(evalStates.get(0));
+    	ArrayList<State> solutionPath = new ArrayList<State>();
+    	solutionPath.add(currentState);
+    	
+    	//Find the solution path
+    	while(currentState.id != 1)
     	{
-    		System.out.print(printList.get(i).solutionStep[0]);
-    		System.out.print(printList.get(i).solutionStep[1]);
-    		System.out.print(printList.get(i).solutionStep[2]);
-    		System.out.print(printList.get(i).solutionStep[3]); 
-    		System.out.println();
+    		currentState = new State(currentState.parent);
+    		solutionPath.add(0, currentState);
     	}
     	
-    	//Print final board state
+    	
+    	//Print the solution path to the output file
+    	for(int i = 0; i < solutionPath.size(); i++)
+    	{
+    		out.write(String.valueOf(solutionPath.get(i).solutionStep[0]));
+    		out.write(" ");
+    		out.write(String.valueOf(solutionPath.get(i).solutionStep[1]));
+    		out.write(" ");
+    		out.write(String.valueOf(solutionPath.get(i).solutionStep[2]));
+    		out.write(" ");
+    		out.write(String.valueOf(solutionPath.get(i).solutionStep[3])); 
+    		out.newLine();
+    		
+    		System.out.println(String.valueOf(solutionPath.get(i).solutionStep[0]));
+    	}
+    	
+
+    	
     	board = evalStates.get(0).board;
-    	printBoard();
+        for(int i = 0; i < board.length; i++)
+        {
+        	for(int j = 0; j < board[0].length; j++)
+        	{
+        		out.write(board[i][j]);
+        		out.write(" ");
+        	}
+        	out.newLine();
+        }
+    	
     	
     	//Time in milliseconds
-    	System.out.println((endTime - startTime) / 1000000);
-    	
+    	out.write(String.valueOf((endTime - startTime) / 1000000));
+		out.newLine();
+		
     	//NUmber of steps in solution
-    	System.out.println(printList.size());
+    	out.write(String.valueOf(solutionPath.size()));
+		out.newLine();
+    	
+    	out.close();
 	}
 	
 	 //Moves the passed in worms, passed in body part (1 for head, 0 for tail), in the passed in direction (U, D, L, R)
@@ -235,28 +251,28 @@ public class IDDFTS
     					{
     						tempBoard[i - 1][j] = (char) (wormNumber + 48);
     						tempBoard[i][j] = '^';
-    						tempBoard = followBodyToTail(i, j, tempBoard);
+    						tempBoard = followBodyToTail(i, j, tempBoard, direction);
     						moveMade = true;
     					}
     					if(tempBoard[i][j] == (char) (wormNumber + 48) && direction == 'D')
     					{
     						tempBoard[i + 1][j] = (char) (wormNumber + 48);
     						tempBoard[i][j] = 'v';
-    						tempBoard = followBodyToTail(i, j, tempBoard);
+    						tempBoard = followBodyToTail(i, j, tempBoard, direction);
     						moveMade = true;
     					}
     					if(tempBoard[i][j] == (char) (wormNumber + 48) && direction == 'L')
     					{
     						tempBoard[i][j - 1] = (char) (wormNumber + 48);
     						tempBoard[i][j] = '<';
-    						tempBoard = followBodyToTail(i, j, tempBoard);
+    						tempBoard = followBodyToTail(i, j, tempBoard, direction);
     						moveMade = true;
     					}
     					if(tempBoard[i][j] == (char) (wormNumber + 48) && direction == 'R')
     					{
     						tempBoard[i][j + 1] = (char) (wormNumber + 48);
     						tempBoard[i][j] = '>';
-    						tempBoard = followBodyToTail(i, j, tempBoard);
+    						tempBoard = followBodyToTail(i, j, tempBoard, direction);
     						moveMade = true;
     					}
     				}
@@ -330,25 +346,49 @@ public class IDDFTS
     		else if(row > 0 && tempBoard[row - 1][col] == 'D')
     		{
     			row--;
-    			tempBoard[row][col] = 'v';
+    			if(firstLink)
+    			{
+    				tempBoard[row][col] = (char) (wormNumber + 48);
+    				firstLink = false;
+    			}
+    			else
+    				tempBoard[row][col] = 'v';
     			finished = true;
     		}
     		else if(col < tempBoard.length - 1 && tempBoard[row][col + 1] == 'L')
     		{
     			col++;
-    			tempBoard[row][col] = '<';
+    			if(firstLink)
+    			{
+    				tempBoard[row][col] = (char) (wormNumber + 48);
+    				firstLink = false;
+    			}
+    			else
+    				tempBoard[row][col] = '<';
     			finished = true;
     		}
     		else if(row < tempBoard[0].length - 1 && tempBoard[row + 1][col] == 'U')
     		{
     			row++;
-    			tempBoard[row][col] = '^';
+    			if(firstLink)
+    			{
+    				tempBoard[row][col] = (char) (wormNumber + 48);
+    				firstLink = false;
+    			}
+    			else
+    				tempBoard[row][col] = '^';
     			finished = true;
     		}
     		else if(col > 0 && tempBoard[row][col - 1] == 'R')
     		{
     			col--;
-    			tempBoard[row][col] = '>';
+    			if(firstLink)
+    			{
+    				tempBoard[row][col] = (char) (wormNumber + 48);
+    				firstLink = false;
+    			}
+    			else
+    				tempBoard[row][col] = '>';
     			finished = true;
     		}
     	}
@@ -370,11 +410,12 @@ public class IDDFTS
     
     //This function is called when the move originates from the tail of the worm it performs the
     //changes to move the tail forward. The head is found using the passed in tail coordinates.
-    public char[][] followBodyToTail(int row, int col, char[][] tempBoard)
+    public char[][] followBodyToTail(int row, int col, char[][] tempBoard, char direction)
     {
     	//If capitol E is ever inserted then ERROR
     	char directionToLastMove = 'E';
 		boolean finished = false;
+		boolean firstMove = true;
     	
     	while(finished == false)
     	{
@@ -383,46 +424,62 @@ public class IDDFTS
     		{
     			row--;
     			directionToLastMove = 'D';
+    			firstMove = false;
     		}
     		else if(col < tempBoard.length - 1 && tempBoard[row][col + 1] == '<')
     		{
     			col++;
     			directionToLastMove = 'L';
+    			firstMove = false;
     		}
     		else if(row < tempBoard[0].length - 1 && tempBoard[row + 1][col] == '^')
     		{
     			row++;
-    			directionToLastMove = 'U';    		
+    			directionToLastMove = 'U';    
+    			firstMove = false;
     		}
     		else if(col > 0 && tempBoard[row][col - 1] == '>')
     		{
     			col--;
     			directionToLastMove = 'R';
+    			firstMove = false;
     		}
     		else if(row > 0 && tempBoard[row - 1][col] == 'D')
     		{
-    			tempBoard[row][col] = directionToLastMove;
+    			if(firstMove == true)
+    				tempBoard[row][col] = direction;
+    			else
+    				tempBoard[row][col] = directionToLastMove;
     			row--;
     			tempBoard[row][col] = 'e';
     			finished = true;
     		}
     		else if(col < tempBoard.length - 1 && tempBoard[row][col + 1] == 'L')
     		{
-    			tempBoard[row][col] = directionToLastMove;
+    			if(firstMove == true)
+    				tempBoard[row][col] = direction;
+    			else
+    				tempBoard[row][col] = directionToLastMove;
     			col++;
     			tempBoard[row][col] = 'e';
     			finished = true;
     		}
     		else if(row < tempBoard[0].length - 1 && tempBoard[row + 1][col] == 'U')
     		{
-    			tempBoard[row][col] = directionToLastMove;
+    			if(firstMove == true)
+    				tempBoard[row][col] = direction;
+    			else
+    				tempBoard[row][col] = directionToLastMove;
     			row++;
     			tempBoard[row][col] = 'e';
     			finished = true;
     		}
     		else if(col > 0 && tempBoard[row][col - 1] == 'R')
     		{
-    			tempBoard[row][col] = directionToLastMove;
+    			if(firstMove == true)
+    				tempBoard[row][col] = direction;
+    			else
+    				tempBoard[row][col] = directionToLastMove;
     			col--;
     			tempBoard[row][col] = 'e';
     			finished = true;
@@ -506,19 +563,5 @@ public class IDDFTS
     	
     	return coords;
     }
-
-    
-	public void printBoard() 
-	{
-        for(int i = 0; i < board.length; i++)
-        {
-        	for(int j = 0; j < board[0].length; j++)
-        	{
-        		System.out.print(board[i][j]);
-        		System.out.print(" ");
-        	}
-        		System.out.println();
-        }
-	}
 }
 	

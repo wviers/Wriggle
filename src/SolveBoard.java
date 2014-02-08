@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class SolveBoard
@@ -7,7 +8,7 @@ public class SolveBoard
     //Each index contains a int array that contains {headRow, headCol, tailRow, tailCol}
     ArrayList<int[]> wormPositions = new ArrayList<int[]>();
   
-    public SolveBoard(char[][] gameBoard, int numWorms)
+    public SolveBoard(char[][] gameBoard, int numWorms) throws IOException
     {
       board = gameBoard;
       
