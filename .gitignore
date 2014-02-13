@@ -2,6 +2,7 @@
 *.project
 *.classpath
 .settings
+output.txt
 
 # Package Files #
 *.jar

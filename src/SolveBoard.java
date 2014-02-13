@@ -13,7 +13,8 @@ public class SolveBoard
       board = gameBoard;
       
       //BFTS bfts = new BFTS(board);
-      IDDFTS iddfts = new IDDFTS(board, numWorms);
+      //IDDFTS iddfts = new IDDFTS(board, numWorms);
+      GBFGS gbfgs = new GBFGS(board, numWorms);
     }
     
 	public void printBoard() 

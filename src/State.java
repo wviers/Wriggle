@@ -1,6 +1,6 @@
 public class State
 {
-	int id, parentID;
+	int id, parentID, heuristicOrder;
 	char[][] board;
 	State parent;
 	int[] solutionStep = new int[4];
@@ -28,6 +28,7 @@ public class State
 		solutionStep[3] = row;
 	}
 	
+	
 	public State(State copy)
 	{
 		id = copy.id;
@@ -37,5 +38,11 @@ public class State
 		solutionStep[1] = copy.solutionStep[1];
 		solutionStep[2] = copy.solutionStep[2];
 		solutionStep[3] = copy.solutionStep[3];
+	}
+	
+	
+	public void setOrder(int order)
+	{
+		heuristicOrder = order;
 	}
 }
