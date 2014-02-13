@@ -4,7 +4,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
 
 
@@ -37,23 +36,19 @@ public class GBFGS
     
 
     //Greedy Best First Graph Search
-    //I add the heads states to the Frontier queue first, picking a random worm each time and adding all 
-    //the states from that worm.  States will be ordered in the frontier using the heuristic where states 
-    //that move the blue worm closer to the goal are preferred and states that move non blue worms away 
-    //from the goal are preferred.  States are popped off of the frontier queue onto the evalQueue which 
-    //in turn adds new states to the frontier.  This continues until the state on the eval queue is the
-    //goal state.The depth starts at 0 and increases by by 1 each time the goal state is not found and 
-    //the depth state is reached.
+    //I add the heads states to the Frontier queue first, adding states for each of the worms starting  
+    //with 0.  States will be ordered in the frontier using the heuristic where states that move
+    //the blue worm closer to the goal are preferred and states that move non blue worms away from
+    //the goal are preferred.  States are popped off of the frontier queue onto the evalQueue which 
+    //in turn adds new states to the frontier.  Each time a state is added to the eval queue it is also
+    //added to a hashmap representing the explored set.  This continues until the state on the eval queue 
+    //is the goal state.
 	public GBFGS(char[][] passedBoard, int worms) throws IOException
 	{
 		board = passedBoard;
 		numWorms = worms;
-		Random gen = new Random();
 		String key = "";
 		
-		//Number of states from the initial state the algorithm will evaluate
-		int randWorm;
-	      
 	    //Setup inital state
 	    State initialState = new State(0, board, currentState, 0, 0, 0, 0);
 	    frontierStates.add(initialState);
@@ -80,7 +75,6 @@ public class GBFGS
     		if(stateChanged == true)
     			currentState++;
       		stateChanged = false;
-    		randWorm = gen.nextInt(numWorms);
     		
            	//pop frontier for eval
    			if(!frontierStates.isEmpty())
@@ -92,88 +86,91 @@ public class GBFGS
    			
             //Get worm position in the new state
     		getWormPosistions(evalStates.get(0).board);
-   
-   			//above head is empty
-    		if(wormPositions.get(randWorm)[0] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[0] - 1][wormPositions.get(randWorm)[1]] == 'e')
-    		{
-    			tempBoard = moveWorm(randWorm, 1, 'U');
-   				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 0, wormPositions.get(randWorm)[1], wormPositions.get(randWorm)[0] - 1);
-   				newState++;
-    			stateChanged = true;
-    			greedyHeuristic(tempState, randWorm, 0);
-    		}
-    		//below head is empty
-   			if(wormPositions.get(randWorm)[0] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[0] + 1][wormPositions.get(randWorm)[1]] == 'e')
-    		{
-    			tempBoard = moveWorm(randWorm, 1, 'D');
-    			tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 0, wormPositions.get(randWorm)[1], wormPositions.get(randWorm)[0] + 1);
-   				newState++;
-   				stateChanged = true;
-   				greedyHeuristic(tempState, randWorm, 1);
-    		}
-    		//left of head is empty
-    		if(wormPositions.get(randWorm)[1] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[0]][wormPositions.get(randWorm)[1] - 1] == 'e')
-  			{
-    			tempBoard = moveWorm(randWorm, 1, 'L');
-    			tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 0, wormPositions.get(randWorm)[1] - 1, wormPositions.get(randWorm)[0]);
-    			newState++;
-    			stateChanged = true;
-   				greedyHeuristic(tempState, randWorm, 0);
-   			}
-    		//right of head is empty
-    		if(wormPositions.get(randWorm)[1] < board.length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[0]][wormPositions.get(randWorm)[1] + 1] == 'e')
-    		{
-   				tempBoard = moveWorm(randWorm, 1, 'R');
-   				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 0, wormPositions.get(randWorm)[1] + 1, wormPositions.get(randWorm)[0]);
-    			newState++;
-    			stateChanged = true;
-   				greedyHeuristic(tempState, randWorm, 1);
-    		}
-   			//above tail is empty
-    		if(wormPositions.get(randWorm)[2] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[2] - 1][wormPositions.get(randWorm)[3]] == 'e')
-    		{
-    			tempBoard = moveWorm(randWorm, 0, 'U');
-   				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 1, wormPositions.get(randWorm)[3], wormPositions.get(randWorm)[2] - 1);
-  				newState++;
-   				stateChanged = true;
-   				greedyHeuristic(tempState, randWorm, 0);
-    		}
-    		//below tail is empty
-    		if(wormPositions.get(randWorm)[2] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[2] + 1][wormPositions.get(randWorm)[3]] == 'e')
-   			{
-   				tempBoard = moveWorm(randWorm, 0, 'D');
-    			tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 1, wormPositions.get(randWorm)[3], wormPositions.get(randWorm)[2] + 1);
-    			newState++;
-    			stateChanged = true;
-   				greedyHeuristic(tempState, randWorm, 1);
-   			}
-   			//left of tail is empty
-    		if(wormPositions.get(randWorm)[3] > 0 && evalStates.get(0).board[wormPositions.get(randWorm)[2]][wormPositions.get(randWorm)[3] - 1] == 'e')
-    		{
-    			tempBoard = moveWorm(randWorm, 0, 'L');
-   				tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 1, wormPositions.get(randWorm)[3] - 1, wormPositions.get(randWorm)[2]);
-   				newState++;
-   				stateChanged = true;
-   				greedyHeuristic(tempState, randWorm, 0);
-    		}
-    		//right of tail is empty
-    		if(wormPositions.get(randWorm)[3] < board.length - 1 && evalStates.get(0).board[wormPositions.get(randWorm)[2]][wormPositions.get(randWorm)[3] + 1] == 'e')
-   			{
-   				tempBoard = moveWorm(randWorm, 0, 'R');
-    			tempState = new State(newState, tempBoard, evalStates.get(0), randWorm, 1, wormPositions.get(randWorm)[3] + 1, wormPositions.get(randWorm)[2]);
-    			newState++;
-    			stateChanged = true;
-   				greedyHeuristic(tempState, randWorm, 1);
-    		}
     		
-        	getWormPosistions(evalStates.get(0).board);
-        	
-           	//check eval for GS 
-           	if((wormPositions.get(0)[0] == board.length - 1 && wormPositions.get(0)[1] == board.length - 1) || (wormPositions.get(0)[2] == board.length - 1 && wormPositions.get(0)[3] == board.length - 1))
-           	{
-           		goalFound = true;
-            	endTime = System.nanoTime();
-            }  		
+    		for(int h = 0; h < numWorms; h++)
+    		{
+	   			//above head is empty
+	    		if(wormPositions.get(h)[0] > 0 && evalStates.get(0).board[wormPositions.get(h)[0] - 1][wormPositions.get(h)[1]] == 'e')
+	    		{
+	    			tempBoard = moveWorm(h, 1, 'U');
+	   				tempState = new State(newState, tempBoard, evalStates.get(0), h, 0, wormPositions.get(h)[1], wormPositions.get(h)[0] - 1);
+	   				newState++;
+	    			stateChanged = true;
+	    			greedyHeuristic(tempState, h, 0);
+	    		}
+	    		//below head is empty
+	   			if(wormPositions.get(h)[0] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(h)[0] + 1][wormPositions.get(h)[1]] == 'e')
+	    		{
+	    			tempBoard = moveWorm(h, 1, 'D');
+	    			tempState = new State(newState, tempBoard, evalStates.get(0), h, 0, wormPositions.get(h)[1], wormPositions.get(h)[0] + 1);
+	   				newState++;
+	   				stateChanged = true;
+	   				greedyHeuristic(tempState, h, 1);
+	    		}
+	    		//left of head is empty
+	    		if(wormPositions.get(h)[1] > 0 && evalStates.get(0).board[wormPositions.get(h)[0]][wormPositions.get(h)[1] - 1] == 'e')
+	  			{
+	    			tempBoard = moveWorm(h, 1, 'L');
+	    			tempState = new State(newState, tempBoard, evalStates.get(0), h, 0, wormPositions.get(h)[1] - 1, wormPositions.get(h)[0]);
+	    			newState++;
+	    			stateChanged = true;
+	   				greedyHeuristic(tempState, h, 0);
+	   			}
+	    		//right of head is empty
+	    		if(wormPositions.get(h)[1] < board.length - 1 && evalStates.get(0).board[wormPositions.get(h)[0]][wormPositions.get(h)[1] + 1] == 'e')
+	    		{
+	   				tempBoard = moveWorm(h, 1, 'R');
+	   				tempState = new State(newState, tempBoard, evalStates.get(0), h, 0, wormPositions.get(h)[1] + 1, wormPositions.get(h)[0]);
+	    			newState++;
+	    			stateChanged = true;
+	   				greedyHeuristic(tempState, h, 1);
+	    		}
+	   			//above tail is empty
+	    		if(wormPositions.get(h)[2] > 0 && evalStates.get(0).board[wormPositions.get(h)[2] - 1][wormPositions.get(h)[3]] == 'e')
+	    		{
+	    			tempBoard = moveWorm(h, 0, 'U');
+	   				tempState = new State(newState, tempBoard, evalStates.get(0), h, 1, wormPositions.get(h)[3], wormPositions.get(h)[2] - 1);
+	  				newState++;
+	   				stateChanged = true;
+	   				greedyHeuristic(tempState, h, 0);
+	    		}
+	    		//below tail is empty
+	    		if(wormPositions.get(h)[2] < board[0].length - 1 && evalStates.get(0).board[wormPositions.get(h)[2] + 1][wormPositions.get(h)[3]] == 'e')
+	   			{
+	   				tempBoard = moveWorm(h, 0, 'D');
+	    			tempState = new State(newState, tempBoard, evalStates.get(0), h, 1, wormPositions.get(h)[3], wormPositions.get(h)[2] + 1);
+	    			newState++;
+	    			stateChanged = true;
+	   				greedyHeuristic(tempState, h, 1);
+	   			}
+	   			//left of tail is empty
+	    		if(wormPositions.get(h)[3] > 0 && evalStates.get(0).board[wormPositions.get(h)[2]][wormPositions.get(h)[3] - 1] == 'e')
+	    		{
+	    			tempBoard = moveWorm(h, 0, 'L');
+	   				tempState = new State(newState, tempBoard, evalStates.get(0), h, 1, wormPositions.get(h)[3] - 1, wormPositions.get(h)[2]);
+	   				newState++;
+	   				stateChanged = true;
+	   				greedyHeuristic(tempState, h, 0);
+	    		}
+	    		//right of tail is empty
+	    		if(wormPositions.get(h)[3] < board.length - 1 && evalStates.get(0).board[wormPositions.get(h)[2]][wormPositions.get(h)[3] + 1] == 'e')
+	   			{
+	   				tempBoard = moveWorm(h, 0, 'R');
+	    			tempState = new State(newState, tempBoard, evalStates.get(0), h, 1, wormPositions.get(h)[3] + 1, wormPositions.get(h)[2]);
+	    			newState++;
+	    			stateChanged = true;
+	   				greedyHeuristic(tempState, h, 1);
+	    		}
+	    		
+	        	getWormPosistions(evalStates.get(0).board);
+	        	
+	           	//check eval for GS 
+	           	if((wormPositions.get(0)[0] == board.length - 1 && wormPositions.get(0)[1] == board.length - 1) || (wormPositions.get(0)[2] == board.length - 1 && wormPositions.get(0)[3] == board.length - 1))
+	           	{
+	           		goalFound = true;
+	            	endTime = System.nanoTime();
+	            }  
+    		}
     	} 	
     	
     	
@@ -614,7 +611,7 @@ public class GBFGS
 	    		}
 	    		while(index < frontierStates.size() - 1 && inserted == false)
 	    		{
-	    			if(frontierStates.get(index).heuristicOrder == tempState.heuristicOrder && frontierStates.get(index + 1).heuristicOrder > tempState.heuristicOrder)
+	    			if((frontierStates.get(index).heuristicOrder == tempState.heuristicOrder || frontierStates.get(index).heuristicOrder < tempState.heuristicOrder) && frontierStates.get(index + 1).heuristicOrder > tempState.heuristicOrder)
 	    			{
 	    				frontierStates.add(index + 1, tempState);
 	    				inserted = true;
