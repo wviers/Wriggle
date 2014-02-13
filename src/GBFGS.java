@@ -49,6 +49,7 @@ public class GBFGS
 		board = passedBoard;
 		numWorms = worms;
 		Random gen = new Random();
+		String key = "";
 		
 		//Number of states from the initial state the algorithm will evaluate
 		int randWorm;
@@ -56,6 +57,10 @@ public class GBFGS
 	    //Setup inital state
 	    State initialState = new State(0, board, currentState, 0, 0, 0, 0);
 	    frontierStates.add(initialState);
+	    
+    	//generate key for initial state
+	    key = buildKey(initialState);
+    	exploredStates.put(key, initialState);
 	      
 	    //Finds the head and tail coordinates of all of the worms
 	    getWormPosistions(frontierStates.get(0).board);
@@ -66,7 +71,7 @@ public class GBFGS
 		State tempState;
     	
     	startTime = System.nanoTime();
-		currentState = 0;
+		currentState++;
 		newState = 1;
 		stateChanged = false;
 		
@@ -79,7 +84,11 @@ public class GBFGS
     		
            	//pop frontier for eval
    			if(!frontierStates.isEmpty())
+   			{
    				evalStates.add(0, frontierStates.remove(0));
+   				key = buildKey(evalStates.get(0));
+   		    	exploredStates.put(key, evalStates.get(0));
+   			}
    			
             //Get worm position in the new state
     		getWormPosistions(evalStates.get(0).board);
@@ -176,7 +185,7 @@ public class GBFGS
     	solutionPath.add(currentState);
     	
     	//Find the solution path
-    	while(currentState.id != 1)
+    	while(currentState.parent.id != 0)
     	{
     		currentState = new State(currentState.parent);
     		solutionPath.add(0, currentState);
@@ -569,37 +578,40 @@ public class GBFGS
     {	
     	String key = "";
     	
-    	//generate key for current state
-    	for(int i = 0; i < board.length; i++)
-    	{
-    		String addition = new String(tempState.board[i]); 
-    		key += addition;  
-    	}
+    	key = buildKey(tempState);
     	
     	if(wormMoved == 0 && towardGoal == 1)
-    		tempState.setOrder(2);
+    		tempState.setOrder(0);
     	if(wormMoved == 0 && towardGoal == 0)
-    		tempState.setOrder(0);
-    	if(wormMoved > 0 && towardGoal == 1)
-    		tempState.setOrder(0);
-    	if(wormMoved > 0 && towardGoal == 0)
     		tempState.setOrder(1);
+    	if(wormMoved > 0 && towardGoal == 1)
+    		tempState.setOrder(1);
+    	if(wormMoved > 0 && towardGoal == 0)
+    		tempState.setOrder(2);
     
     	if(!exploredStates.containsKey(key))
     	{
-	    	if(exploredStates.isEmpty())
-	    	{
+	    	if(frontierStates.isEmpty())
 	    		frontierStates.add(tempState);
-	    	}
-	    	else if(tempState.heuristicOrder == 0)
+	    	else if(tempState.heuristicOrder == 2)
+	    		frontierStates.add(tempState);    	
+	    	else if(frontierStates.size() == 1)
 	    	{
-	    		frontierStates.add(tempState);
+	    		if(frontierStates.get(0).heuristicOrder < tempState.heuristicOrder || frontierStates.get(0).heuristicOrder == tempState.heuristicOrder)
+		    		frontierStates.add(tempState);
+	    		else
+	    			frontierStates.add(0, tempState);
 	    	}
 	    	else 
 	    	{
 	    		int index = 0;
 	    		boolean inserted = false;
 	    		
+	    		if(frontierStates.get(index).heuristicOrder > tempState.heuristicOrder)
+	    		{
+	    			frontierStates.add(0, tempState);
+	    			inserted = true;
+	    		}
 	    		while(index < frontierStates.size() - 1 && inserted == false)
 	    		{
 	    			if(frontierStates.get(index).heuristicOrder == tempState.heuristicOrder && frontierStates.get(index + 1).heuristicOrder > tempState.heuristicOrder)
@@ -607,9 +619,33 @@ public class GBFGS
 	    				frontierStates.add(index + 1, tempState);
 	    				inserted = true;
 	    			}
+	    			index++;
 	    		}
+	    		if(frontierStates.get(frontierStates.size() - 1).heuristicOrder == tempState.heuristicOrder)
+	    		{
+	    			frontierStates.add(0, tempState);
+	    			inserted = true;
+	    		}
+	    		if(inserted == false)
+	    			System.out.println("ERROR INSERTION FAILED");	
 	    	}
     	}
     }
+    
+    
+    public String buildKey(State state)
+    {
+    	String key = "";
+    	
+    	//generate key for current state
+    	for(int i = 0; i < board.length; i++)
+    	{
+    		String addition = new String(state.board[i]); 
+    		key += addition;  
+    	}
+    	
+    	return key;
+    }
+    
 }
 	
