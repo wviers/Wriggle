@@ -10,11 +10,12 @@ public class SolveBoard
   
     public SolveBoard(char[][] gameBoard, int numWorms) throws IOException
     {
-      board = gameBoard;
+    	board = gameBoard;
       
-      //BFTS bfts = new BFTS(board);
-      //IDDFTS iddfts = new IDDFTS(board, numWorms);
-      GBFGS gbfgs = new GBFGS(board, numWorms);
+	    //BFTS bfts = new BFTS(board);
+	    //IDDFTS iddfts = new IDDFTS(board, numWorms);
+	    //GBFGS gbfgs = new GBFGS(board, numWorms);
+	    ASGS asgs = new ASGS(board, numWorms);
     }
     
 	public void printBoard() 

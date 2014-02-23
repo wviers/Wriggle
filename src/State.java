@@ -1,6 +1,12 @@
 public class State
 {
-	int id, parentID, heuristicOrder;
+	//heuristicOrder is set to 1 if worm 0 is being moved 1 otherwise
+	int heuristicOrder;
+	
+	//distance to the bottom right corner of the board + number of parent states
+	int heuristicDistance;
+	
+	int id, parentID;
 	char[][] board;
 	State parent;
 	int[] solutionStep = new int[4];
@@ -44,5 +50,10 @@ public class State
 	public void setOrder(int order)
 	{
 		heuristicOrder = order;
+	}
+	
+	public void setHeuristicDistance(int passedDist)
+	{
+		heuristicDistance = passedDist;
 	}
 }

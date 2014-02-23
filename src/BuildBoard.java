@@ -26,8 +26,8 @@ public class BuildBoard
 
 		//Input from text file
 		numWorms = Integer.parseInt(tokens[2]);
-		rows = Integer.parseInt(tokens[0]);
-		cols = Integer.parseInt(tokens[1]);
+		cols = Integer.parseInt(tokens[0]);
+		rows = Integer.parseInt(tokens[1]);
 		char[][] board = new char[rows][cols];
     
     
